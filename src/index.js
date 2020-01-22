@@ -1,37 +1,69 @@
 import { html, render } from 'lit-html';
 
-import './file-data';
-import './route';
-import './router';
-import './route-link';
-
-const roterConfig = {
-  '/': {
-    selector: 'fjs-file-data',
-    lazy: false,
-    fileName: 'file-data',
-    export: 'FileData',
-  }
-};
-
 const styles = `
-  * { font-family: sans-serif; }
-  .container { margin: 10px 5px; }
+  ul { padding: 0; }
 `;
-
-const template = html`
+const template = (ctx) => html`
   <style>${styles}</style>
-  <div class="container">
-    <fjs-router .config=${roterConfig}></fjs-router>
-  </div>
-`;
+  <div>Process Data</div>
+  <input type="text" @keyup=${ctx.inputKeyupHandler} .value=${ctx.pidInputValue}>
+  <button @click=${ctx.startPolling}>Start Polling</button>
+  <button @click=${ctx.stopPolling}>Stop Polling</button>
+  <ul>
+  ${
+  !!ctx.fileData.length
+    ? ctx.fileData.map(data => html`<li>${data}</li>`)
+    : 'No data'
+  }
+  </ul>
+  `;
 
-class App extends HTMLElement {
+export class FileData extends HTMLElement {
+  static selector = 'fjs-file-data';
+
+  pidInputValue = '';
+  fileData = [];
+
+  socket = null;
+
   constructor() {
     super();
     this.attachShadow({ mode: 'open' });
-    render(template, this.shadowRoot);
+    this.render();
+    this.openFileDataSocket();
+
+    this.render();
+  }
+
+  openFileDataSocket() {
+    this.socket = io('http://localhost:8082');
+    console.log(this.socket);
+
+    this.socket.on('message', msg => this.handleMessage(msg));
+  }
+
+  handleMessage(msg) {
+    this.fileData.push(msg);
+    this.render();
+  }
+
+  inputKeyupHandler = (event) => {
+    const target = event.target;
+    this.pidInputValue = target.value;
+  }
+
+  startPolling = () => {
+    console.log('start polling');
+    console.log(this.pidInputValue);
+  }
+
+  stopPolling = () => {
+    console.log('stop polling');
+  }
+
+  render() {
+    render(template(this), this.shadowRoot);
   }
 }
 
-customElements.define('fjs-app', App);
+customElements.define(FileData.selector, FileData);
