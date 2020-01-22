@@ -15,7 +15,6 @@ io.on('connection', function (socket) {
   });
 });
 
-
 async function checkProcess() {
   const data = await psList();
   console.log(data);
