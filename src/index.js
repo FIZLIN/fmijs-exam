@@ -37,6 +37,10 @@ export class FileData extends HTMLElement {
 
   openFileDataSocket() {
     this.socket = io('http://localhost:8082');
+    // some info:
+    // -- send messages with `this.socket.emit('message', 'test message');`
+    // -- listen for messages with `this.socket.on('message', msg => ...);`
+
     console.log(this.socket);
 
     this.socket.on('message', msg => this.handleMessage(msg));
@@ -44,6 +48,10 @@ export class FileData extends HTMLElement {
 
   handleMessage(msg) {
     this.fileData.push(msg);
+    this.render();
+  }
+  clearMessages() {
+    this.fileData = [];
     this.render();
   }
 
@@ -55,10 +63,12 @@ export class FileData extends HTMLElement {
   startPolling = () => {
     console.log('start polling');
     console.log(this.pidInputValue);
+    // ...
   }
 
   stopPolling = () => {
     console.log('stop polling');
+    // ...
   }
 
   render() {
